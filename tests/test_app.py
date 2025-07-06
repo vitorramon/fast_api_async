@@ -43,6 +43,15 @@ def test_read_users(client):
         'users': [{'id': 1, 'email': 'alice@example.com', 'username': 'alice'}]
     }
 
+def test_get_user(client):
+    response = client.get('/users/1')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        'id': 1,
+        'email': 'alice@example.com',
+        'username': 'alice',
+    }
+
 
 def test_update_user(client):
     response = client.put(
@@ -70,3 +79,35 @@ def test_delete_user(client):
         'email': 'alice@example.com',
         'id': 1,
     }
+
+
+# Exercícios
+# Escrever um teste para o erro de 404 (NOT FOUND) para o endpoint de PUT;
+# Escrever um teste para o erro de 404 (NOT FOUND) para o endpoint de DELETE;
+# Criar um endpoint de GET para pegar um único recurso como users/{id} e
+# fazer seus testes para 200 e 404.
+
+
+def test_update_user_should_return_not_found(client):
+    response = client.put(
+        '/users/666',
+        json={
+            'username': 'bob',
+            'email': 'bob@example.com',
+            'password': 'mynewpassword',
+        },
+    )
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'User not found'}
+
+
+def test_delete_user_should_return_not_found(client):
+    response = client.delete('/users/666')
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'User not found'}
+
+
+def test_get_user_should_return_not_found(client):
+    response = client.get('/users/666')
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'User not found'}
