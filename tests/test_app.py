@@ -43,6 +43,7 @@ def test_read_users(client):
         'users': [{'id': 1, 'email': 'alice@example.com', 'username': 'alice'}]
     }
 
+
 def test_get_user(client):
     response = client.get('/users/1')
     assert response.status_code == HTTPStatus.OK
