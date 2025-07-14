@@ -40,5 +40,3 @@ def _mock_db_time(*, model, time=datetime(2025, 5, 20)):
 @pytest.fixture
 def mock_db_time():
     return _mock_db_time
-
-# TODO: PAREI A VIDEO AULA AOS 1:17:00
