@@ -1,7 +1,11 @@
 from http import HTTPStatus
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
+from fast_api_async.database import get_session
+from fast_api_async.models import User
 from fast_api_async.schemas import (
     Message,
     UserDB,
@@ -21,22 +25,48 @@ def read_root():
 
 
 @app.post('/users/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
-def create_user(user: UserSchema):
+def create_user(user: UserSchema, session=Depends(get_session)):
     """
     Cria um usuário com os dados fornecidos.
     """
-    user_with_id = UserDB(**user.model_dump(), id=len(database) + 1)
+    db_user = session.scalar(
+        select(User).where(
+            (User.username == user.username) | (User.email == user.email)
+        )
+    )
 
-    database.append(user_with_id)
-    return user_with_id
+    if db_user:
+        if db_user.username == user.username:
+            raise HTTPException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                detail='Username already exists',
+            )
+        if db_user.email == user.email:
+            raise HTTPException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                detail='Email already exists',
+            )
+
+    db_user = User(
+        username=user.username, email=user.email, password=user.password
+    )
+
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
+
+    return db_user
 
 
 @app.get('/users/', status_code=HTTPStatus.OK, response_model=UserList)
-def read_users():
+def read_users(
+    limit: int = 10, offset: int = 0, session: Session = Depends(get_session)
+):
     """
     Retorna todos os usuários cadastrados.
     """
-    return {'users': database}
+    users = session.scalars(select(User).limit(limit).offset(offset))
+    return {'users': users}
 
 
 @app.get(
