@@ -16,3 +16,6 @@ Criar uma nova migração autogerada com alembic.
 
 Exercício 04
 Aplicar essa migração ao banco de dados
+
+
+PAREI NA AULA 5 - 1:01:19
