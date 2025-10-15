@@ -9,7 +9,7 @@ from sqlalchemy.pool import StaticPool
 
 from fast_api_async.app import app
 from fast_api_async.database import get_session
-from fast_api_async.models import table_registry
+from fast_api_async.models import User, table_registry
 
 
 @pytest.fixture
@@ -53,3 +53,12 @@ def _mock_db_time(*, model, time=datetime(2025, 5, 20)):
 @pytest.fixture
 def mock_db_time():
     return _mock_db_time
+
+
+@pytest.fixture
+def user(session: Session):
+    user = User(username='Teste', email='teste@test.com', password='testtest')
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return user
